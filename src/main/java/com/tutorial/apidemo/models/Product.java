@@ -1,23 +1,43 @@
 package com.tutorial.apidemo.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
+import java.util.Calendar;
+import java.util.Objects;
 
 
 // POJO - Plain Object Java Object
 @Entity
+@Table(name="tblProduct") // map
 public class Product {
     // Định nghĩa Class là thực thể nên cần phải định nghĩa chỗ này
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO) // ~ PRIMARY KEY AUTO_INCREMENT
+//    @GeneratedValue(strategy = GenerationType.AUTO) // ~ PRIMARY KEY AUTO_INCREMENT
+
+    // Quy tac tao ID , "sequence"
+    @SequenceGenerator(
+            name = "product_sequence",
+            sequenceName = "product_sequence",
+            allocationSize = 1 // increment by 1
+    )
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "product_sequence"
+    )
     private Long id;
+
+    // validate =constraint
+    @Column(nullable = false, unique = true, length = 300)
     private String productName;
     private int productionYear;
     private Double price;
     private String url;
-
+    // calculated field
+    @Transient
+    private int age;
+    public int getAge(){
+        return Calendar.getInstance().get(Calendar.YEAR) - productionYear;
+    }
     public Product() {
 
     }
@@ -78,5 +98,18 @@ public class Product {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    // Project nay ko dung den
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Product product)) return false;
+        return productionYear == product.productionYear && age == product.age && Objects.equals(id, product.id) && Objects.equals(productName, product.productName) && Objects.equals(price, product.price) && Objects.equals(url, product.url);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, productName, productionYear, price, url, age);
     }
 }
